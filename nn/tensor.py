@@ -50,8 +50,16 @@ class Tensor:
         self.shape = [s + 2*p for s, p in zip(self.shape, pad)]
         self.axis_size = self.get_axis_size()
 
-    def at(self, name, pos):
-        at = " + ".join([f"{p}*({s.strip(' ')})" for p, s in zip(self.axis_size, pos)])
+    def unpadded_shape(self):
+        return tuple([s - 2 * p for s, p in zip(self.shape, self.pad)])
+
+    def padded_at(self, name, indices):
+        at = " + ".join([f"{s}*(({i.strip(' ')}) + {p})" for s, i, p in zip(self.axis_size, indices, self.pad)])
+
+        return f"{name}[{at}]"
+
+    def at(self, name, indices):
+        at = " + ".join([f"{s}*({i.strip(' ')})" for s, i in zip(self.axis_size, indices)])
 
         return f"{name}[{at}]"
 

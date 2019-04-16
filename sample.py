@@ -2,8 +2,8 @@ import numpy as np
 import pyopencl as cl
 import time
 
-from libs.tensor import Constant, Tensor
-from libs.kernel import SourceCode
+from nn.tensor import Constant, Tensor
+from nn.kernel import SourceCode
 
 "ami-0e0a1f474ff96ec0a"
 

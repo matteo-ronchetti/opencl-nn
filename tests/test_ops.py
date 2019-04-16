@@ -2,9 +2,9 @@ from unittest import TestCase
 import numpy as np
 import pyopencl as cl
 
-from libs.tensor import Constant, Tensor
-from libs.kernel import SourceCode
-from libs.npops import np_conv, np_pad
+from nn.tensor import Constant, Tensor
+from nn.kernel import SourceCode
+from nn.npops import np_conv, np_pad
 
 
 class TestOps(TestCase):

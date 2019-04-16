@@ -2,6 +2,7 @@ import re
 import pyopencl as cl
 
 at_re = re.compile(r"([a-zA-Z]+)@\[([^\]]+)\]")
+padded_at_re = re.compile(r"([a-zA-Z]+)@padded\[([^\]]+)\]")
 shape_re = re.compile(r"([a-zA-Z]+)@shape\[([0-9]+)\]")
 ops_re = re.compile(r"\$([a-zA-Z_0-9]+){([^}]+)}")
 
@@ -13,6 +14,7 @@ class SourceCode:
 
     def render(self, tensors: dict, operations: dict = None):
         code = at_re.sub(lambda m: tensors[m.group(1)].at(m.group(1), m.group(2).split(",")), self.code)
+        code = padded_at_re.sub(lambda m: tensors[m.group(1)].padded_at(m.group(1), m.group(2).split(",")), code)
         code = shape_re.sub(lambda m: str(tensors[m.group(1)].shape[int(m.group(2))]), code)
 
         if operations:

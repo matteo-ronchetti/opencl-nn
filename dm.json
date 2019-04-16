@@ -1,0 +1,12 @@
+{
+  "repository": "git@github.com:matteo-ronchetti/opencl-nn.git",
+  "project": "openclnn",
+  "tasks": {
+    "test": {
+      "env": "p2-pytorch",
+      "commands": [
+        "{python} main.py"
+      ]
+    }
+  }
+}

@@ -2,8 +2,8 @@ import numpy as np
 import pyopencl as cl
 from abc import ABC, abstractmethod
 
-from libs.tensor import Tensor
-from libs.kernel import read_compile
+from nn.tensor import Tensor
+from nn.kernel import read_compile
 
 
 class BaseOp(ABC):
@@ -47,7 +47,7 @@ class FillPadOp(BaseOp):
 
         kernel = read_compile(ctx, "kernels/padding.c", tensors).edge_padding
 
-        return [kernel, [(self.x.shape[3], self.x.shape[2], self.x.shape[0]), None, x]]
+        return [kernel, [(self.x.output.shape[3], self.x.output.shape[2], self.x.output.shape[0]), None, x]]
 
 
 class ConvOp(BaseOp):
@@ -82,4 +82,33 @@ class ConvOp(BaseOp):
 
         kernel = read_compile(ctx, "kernels/convolution.c", tensors, operations).convolution
 
-        return [kernel, [(self.y.shape[3], self.y.shape[2], self.y.shape[0]), None, x, w, y]]
+        y_shape = self.y.output.unpadded_shape()
+
+        return [kernel, [(y_shape[3], y_shape[2], y_shape[0]), (8, 8, 1), x, w, y]]
+
+
+class ActivationOp(BaseOp):
+    def __init__(self, x, f):
+        super().__init__()
+        self.x = x
+        self.f = f
+
+        self.inputs = [x]
+        self.output = x.output
+
+    def _compile(self, ctx):
+        x = self.x.output.allocate(ctx)
+
+        tensors = {
+            "X": self.x.output
+        }
+
+        operations = {
+            "f": self.f,
+        }
+
+        kernel = read_compile(ctx, "kernels/activation.c", tensors, operations).activation
+
+        x_shape = self.x.output.unpadded_shape()
+
+        return [kernel, [(x_shape[3], x_shape[2], x_shape[0]), None, x]]
