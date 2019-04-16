@@ -31,6 +31,7 @@
 # print(np.linalg.norm(res_np - (a_np + b_np)))
 import pyopencl as cl
 
+
 print('\n' + '=' * 60 + '\nOpenCL Platforms and Devices')
 
 # Print each platform on this computer

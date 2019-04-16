@@ -25,7 +25,7 @@ class Model:
 
 
 def compile_model(x: Tensor, y):
-    ctx = cl.create_some_context(interactive=False)
+    ctx = cl.create_some_context(False)
     queue = cl.CommandQueue(ctx)
 
     ops = y.compile(ctx)

@@ -5,40 +5,29 @@ import time
 from nn.tensor import Constant, Tensor
 from nn.kernel import SourceCode
 
-"ami-0e0a1f474ff96ec0a"
+code = """
+__kernel void sample(__global float *A){
+    A[get_global_id(0)] = get_global_id(0);
+}
+"""
+
 
 def main():
-    x = np.random.randn(10, 5, 32, 32).astype(np.float32)
-    padding = (0, 0, 2, 2)
+    ctx = cl.create_some_context(False)
+    ker = cl.Program(ctx, code).build().sample
 
-    np_y = np.pad(x, ((0, 0), (0, 0), (2, 2), (2, 2)), mode="edge")
-    x = np.pad(x, ((0, 0), (0, 0), (2, 2), (2, 2)), mode="constant")
-    cl_x = x.copy()
-
-    tensors = {
-        "X": Constant(x),
-        "P": Tensor(padding)
-    }
-
-    source = SourceCode("kernels/padding.c").render(tensors)
-
-    print(source)
-
-    ctx = cl.create_some_context(interactive=False)
     queue = cl.CommandQueue(ctx)
+
+    A = np.empty(9, dtype=np.float32)
+
     mf = cl.mem_flags
+    d_A = cl.Buffer(ctx, mf.READ_WRITE | mf.COPY_HOST_PTR, hostbuf=A)
 
-    prg = cl.Program(ctx, source).build()
+    ker(queue, (3,), (3,), d_A, g_times_l=True)
 
-    x_g = cl.Buffer(ctx, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=x)
+    cl.enqueue_copy(queue, A, d_A)
 
-    prg.edge_padding(queue, (x.shape[3], x.shape[2], x.shape[0]), None, x_g)
-    cl.enqueue_copy(queue, cl_x, x_g)
-
-    print(np.max(cl_x - np_y))
-
-    print(cl_x[0, 0, -5:, -5:])
-    print(np_y[0, 0, -5:, -5:])
+    print(A)
 
 
 main()
